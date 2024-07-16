@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/UKHSA-Internal/devops-terrarunt/blob/main/terrarunt/resources/dependencies.schema.json",
+  "title": "Dependencies Schema",
+  "type": "object",
+  "properties": {
+    "dependencies": {
+      "type": "object",
+      "properties": {
+        "paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["paths"]
+    }
+  },
+  "required": ["dependencies"]
+}

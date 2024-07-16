@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "terrarunt"
+description = "A very light Terrafrom wrapper for deploying Terraform stacks"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+classifiers = [
+    "Framework :: Django",
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "requests",
+    "jsonschema",
+    "boto3"
+]
+dynamic = ["version"]
+
+[project.scripts]
+terrarunt = "terrarunt.main:main"
