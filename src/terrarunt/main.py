@@ -26,7 +26,7 @@ def main():
     args = sys.argv[2:]
     command = sys.argv[1]
 
-    if command == "destroy":
+    if command == "destroy" or "-destroy" in args:
         terraform_stacks.reverse()
 
     if command in ["init", "plan", "apply", "destroy"]:
