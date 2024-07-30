@@ -16,13 +16,25 @@ Run this in the same way that you would run ordinary `terraform` commands.
 
 The Terraform `init`, `plan`, `apply`, `destroy` commands are run in each stack.
 
-### Example
+### Examples
 
-The below deploys every stack in the [devops-terraform-example-project](https://github.com/UKHSA-Internal/devops-terraform-example-project).
+#### Terraform Apply
+
+The below deploys every stack in the [devops-terraform-example-project](https://github.com/UKHSA-Internal/devops-terraform-example-project). It will create a `tfplan` file in each stack directory before applying the tfplan.
 
 ```shell
 cd devops-terraform-example-project
 terrarunt init
 terrarunt plan -out tfplan
 terrarunt apply tfplan
+```
+
+#### Terraform Destroy
+
+This will run `terraform destroy` against each stack in the reverse order of how a `terrarunt apply` would run.
+
+```shell
+cd devops-terraform-example-project
+terrarunt init
+terrarunt destroy -auto-approve -input=false
 ```
