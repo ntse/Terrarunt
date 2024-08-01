@@ -5,15 +5,15 @@ import subprocess
 import sys
 
 import terrarunt.providers
-from terrarunt.config import ENVIRONMENT
 from terrarunt.custom_logger import Logger
 
 logger = Logger(__name__)
 
 
 class TerraformStack:
-    def __init__(self, directory):
+    def __init__(self, directory, environment):
         self.directory = directory
+        self.environment = environment
         self.files_copied = []
         self.copy_files_to_stack()
         self.name = os.path.basename(directory)
@@ -34,12 +34,12 @@ class TerraformStack:
         tfvars = os.path.join(
             self.directory,
             "tfvars",
-            f"{self.name}-{ENVIRONMENT}.tfvars",
+            f"{self.name}-{self.environment}.tfvars",
         )
         json = os.path.join(
             self.directory,
             "tfvars",
-            f"{self.name}-{ENVIRONMENT}.tfvars.json",
+            f"{self.name}-{self.environment}.tfvars.json",
         )
 
         if os.path.isfile(tfvars):
@@ -50,8 +50,8 @@ class TerraformStack:
         return []
 
     def _find_env_var_files(self):
-        tfvars = os.path.join("environment", f"{ENVIRONMENT}.tfvars")
-        json = os.path.join("environment", f"{ENVIRONMENT}.tfvars.json")
+        tfvars = os.path.join("environment", f"{self.environment}.tfvars")
+        json = os.path.join("environment", f"{self.environment}.tfvars.json")
 
         if os.path.isfile(tfvars):
             return [f"-var-file={os.path.abspath(tfvars)}"]
@@ -109,7 +109,7 @@ class TerraformStack:
             command.extend(
                 [
                     f"-backend-config=bucket={aws.account_id}-{aws.region}-state",
-                    f"-backend-config=key={ENVIRONMENT}/{self.name}/terraform.tfstate",
+                    f"-backend-config=key={self.environment}/{self.name}/terraform.tfstate",
                     f"-backend-config=region={aws.region}",
                 ],
             )
@@ -121,6 +121,26 @@ class TerraformStack:
 
     def tf_plan(self, args=[]):
         command = ["plan"] + self.variable_files
+        return run_command(self.directory, command, args)
+
+    def tf_validate(self, args=[]):
+        command = ["validate"]
+        return run_command(self.directory, command, args)
+
+    def tf_refresh(self, args=[]):
+        command = ["refresh"]
+        return run_command(self.directory, command, args)
+
+    def tf_workspace(self, args=[]):
+        command = ["workspace"]
+        return run_command(self.directory, command, args)
+
+    def tf_output(self, args=[]):
+        command = ["output"]
+        return run_command(self.directory, command, args)
+
+    def tf_show(self, args=[]):
+        command = ["show"]
         return run_command(self.directory, command, args)
 
     def tf_apply(self, args=[]):
