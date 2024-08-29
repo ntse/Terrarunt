@@ -113,6 +113,8 @@ class TerraformStack:
                     f"-backend-config=region={aws.region}",
                 ],
             )
+        elif self.backend_type == "local":
+            logger.warn("Using local type backend. This is not advised.")
         else:
             raise ValueError(
                 f"Backend type {self.backend_type} is not supported",
