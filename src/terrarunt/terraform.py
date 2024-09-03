@@ -147,13 +147,13 @@ class TerraformStack:
 
     def tf_apply(self, args=[]):
         command = ["apply"]
-        if not os.path.isfile(args[-1]) and args[-1] != "tfplan":
+        if len(args) != 0 and not os.path.isfile(args[-1]):
             command.extend(self.variable_files)
         return run_command(self.directory, command, args)
 
     def tf_destroy(self, args=[]):
         command = ["destroy"]
-        if not os.path.isfile(args[-1]):
+        if len(args) != 0 and not os.path.isfile(args[-1]):
             command.extend(self.variable_files)
         return run_command(self.directory, command, args)
 
