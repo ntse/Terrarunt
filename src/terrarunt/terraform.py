@@ -147,7 +147,7 @@ class TerraformStack:
 
     def tf_apply(self, args=[]):
         command = ["apply"]
-        if not os.path.isfile(args[-1]):
+        if not os.path.isfile(args[-1]) and args[-1] != "tfplan":
             command.extend(self.variable_files)
         return run_command(self.directory, command, args)
 
