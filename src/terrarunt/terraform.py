@@ -28,7 +28,9 @@ class TerraformStack:
         )
 
     def _find_global_files(self):
-        return [f"-var-file={os.path.abspath('globals.tfvars')}"]
+        if os.path.isfile(os.path.abspath('globals.tfvars')):
+            return [f"-var-file={os.path.abspath('globals.tfvars')}"]
+        return []
 
     def _find_app_var_files(self):
         tfvars = os.path.join(
