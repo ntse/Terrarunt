@@ -116,7 +116,7 @@ class TerraformStack:
                 ],
             )
         elif self.backend_type == "local":
-            logger.warn("Using local type backend. This is not advised.")
+            logger.warning("Using local type backend. This is not advised.")
         else:
             raise ValueError(
                 f"Backend type {self.backend_type} is not supported",
@@ -165,6 +165,7 @@ def run_command(directory, command, args=[]):
     command.insert(0, "terraform")
     full_command = command + args
     os.chdir(directory)
+    logger.debug(f"Running {command} with arguments {args}")
     try:
         result = subprocess.run(
             full_command,
