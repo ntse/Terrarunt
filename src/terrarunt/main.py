@@ -2,7 +2,6 @@ import argparse
 from pathlib import Path
 from terrarunt.terraform import apply_stack, plan_stack, destroy_stack, init_stack, bootstrap_backend, auto_bootstrap_backends, set_terraform_bin, resolve_stack_dependencies
 from terrarunt.custom_logger import get_logger
-from __version__ import __version__
 
 logger = get_logger()
 
