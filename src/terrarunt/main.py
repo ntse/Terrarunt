@@ -1,5 +1,6 @@
 import argparse
 from pathlib import Path
+import os
 from terrarunt.terraform import apply_stack, plan_stack, destroy_stack, init_stack, bootstrap_backend, auto_bootstrap_backends, set_terraform_bin, resolve_stack_dependencies
 from terrarunt.custom_logger import get_logger
 
@@ -31,6 +32,7 @@ def main():
     args = parser.parse_args()
 
     if args.terraform_bin:
+        os.environ["TF_WRAPPER_BIN"] = args.terraform_bin
         set_terraform_bin(args.terraform_bin)
 
     if args.command == "apply":
