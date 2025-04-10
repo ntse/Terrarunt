@@ -33,10 +33,6 @@ def main():
     if args.terraform_bin:
         set_terraform_bin(args.terraform_bin)
 
-    if args.version:
-        print(__version__)
-        return
-
     if args.command == "apply":
         apply_stack(args.env, args.stack, args.terraform_flags)
     elif args.command == "plan":
@@ -54,11 +50,16 @@ def main():
             print(path)
     elif args.command == "apply-all":
         import concurrent.futures
-        order, _ = resolve_stack_dependencies()
-        logger.info("Applying stacks in parallel where possible")
+
+        order, dependency_map = resolve_stack_dependencies()
+        logger.info("Applying independent stacks in parallel")
+
+        independent = [p for p in order if not dependency_map.get(Path(p).name)]
+        dependent = [p for p in order if Path(p).name not in [Path(i).name for i in independent]]
+
         with concurrent.futures.ThreadPoolExecutor() as executor:
             futures = {
-                executor.submit(apply_stack, args.env, Path(path).name, args.terraform_flags): Path(path).name for path in order
+                executor.submit(apply_stack, args.env, Path(path).name, args.terraform_flags): Path(path).name for path in independent
             }
             for future in concurrent.futures.as_completed(futures):
                 stack_name = futures[future]
@@ -66,6 +67,14 @@ def main():
                     future.result()
                 except Exception as exc:
                     logger.error(f"Apply failed for {stack_name}: {exc}")
+
+        logger.info("Applying dependent stacks sequentially")
+        for path in dependent:
+            stack_name = Path(path).name
+            try:
+                apply_stack(args.env, stack_name, args.terraform_flags)
+            except Exception as exc:
+                logger.error(f"Apply failed for {stack_name}: {exc}")
     elif args.command == "destroy-all":
         order, skip = resolve_stack_dependencies()
         for path in reversed(order):

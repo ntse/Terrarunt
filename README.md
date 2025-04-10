@@ -10,29 +10,22 @@ pip install git+https://github.com/ntse/terrarunt.git
 
 ## How to use
 
-Run this in the same way that you would run ordinary `terraform` commands.
+Run Terrarunt the same way you would use ordinary terraform commands.
 
-The Terraform `init`, `plan`, `apply`, `destroy`, `show`, `output`, `refresh`, `workspace` and `validate` commands are run in each stack. Every other command (e.g. `terrarunt version`) is passed directly to Terraform and run once from the current working directory.
+Terrarunt wraps and orchestrates Terraform commands per stack and runs common Terraform actions (init, plan, apply, destroy) in each stack, respecting dependency order and environment-specific configuration.
 
-### Examples
+### CLI usage
 
-#### Terraform Apply
+```bash
+# Apply a single stack
+terrarunt --env dev apply --stack hello-world-api
 
-The below deploys every stack in the [devops-terraform-example-project](https://github.com/UKHSA-Internal/devops-terraform-example-project). It will create a `tfplan` file in each stack directory before applying the tfplan. This command does a `cd` into each directory, runs `terraform init` on each stack, followed by a `terraform plan -out tfplan` in each stack, finally followed by a `terraform apply tfplan` in each stack.
+# Apply all stacks with dependency awareness
+terrarunt --env dev apply-all
 
-```shell
-cd devops-terraform-example-project
-aws-vault exec dev-uat -- terrarunt --environment=dev init -input=false
-aws-vault exec dev-uat -- terrarunt --environment=dev plan -out tfplan
-aws-vault exec dev-uat -- terrarunt --environment=dev apply -auto-approve -input=false tfplan
-```
+# Destroy all stacks with dependency awareness
+terrarunt --env dev destroy-all
 
-#### Terraform Destroy
-
-This will run `terraform destroy` against each stack in the reverse order of how a `terrarunt apply` would run.
-
-```shell
-cd devops-terraform-example-project
-aws-vault exec dev-uat -- terrarunt --environment=dev init -input=false
-aws-vault exec dev-uat -- terrarunt --environment=dev destroy -auto-approve -input=false
+# Bootstrap backend state - oidc and state-file
+terrarunt --env dev bootstrap
 ```
