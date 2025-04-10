@@ -10,7 +10,7 @@ from terrarunt.providers import aws
 
 logger = get_logger()
 
-BOOTSTRAP_STACKS = ["state-file", "oidc"]
+BOOTSTRAP_STACKS = ["oidc", "state-file"]
 TERRAFORM_BIN = os.getenv("TF_WRAPPER_BIN", "terraform")
 
 
