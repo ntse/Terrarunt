@@ -1,7 +1,7 @@
 import argparse
 from pathlib import Path
 import os
-from terrarunt.terraform import apply_stack, plan_stack, destroy_stack, init_stack, bootstrap_backend, auto_bootstrap_backends, set_terraform_bin, resolve_stack_dependencies
+from terrarunt.terraform import apply_stack, plan_stack, destroy_stack, init_stack, bootstrap_backend, auto_bootstrap_backends, set_terraform_bin, resolve_stack_dependencies, read_stack_dependencies
 from terrarunt.custom_logger import get_logger
 
 logger = get_logger()
@@ -53,7 +53,16 @@ def main():
     elif args.command == "apply-all":
         import concurrent.futures
 
-        order, dependency_map = resolve_stack_dependencies()
+        order, _ = resolve_stack_dependencies()
+        
+        dependency_map = {}
+        for path in order:
+            name = Path(path).name
+            try:
+                deps = read_stack_dependencies(path)
+                dependency_map[name] = deps
+            except Exception:
+                dependency_map[name] = []
         logger.info("Applying independent stacks in parallel")
 
         independent = [p for p in order if not dependency_map.get(Path(p).name)]

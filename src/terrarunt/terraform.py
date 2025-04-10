@@ -13,6 +13,22 @@ logger = get_logger()
 BOOTSTRAP_STACKS = ["oidc", "state-file"]
 TERRAFORM_BIN = os.getenv("TF_WRAPPER_BIN", "terraform")
 
+def read_stack_dependencies(path: str) -> list[str]:
+    path = Path(path)
+    dep_file = path / "dependencies.json"
+    config_file = path / "stack_config.json"
+
+    if dep_file.exists():
+        with open(dep_file) as f:
+            data = json.load(f)
+            return data.get("dependencies", {}).get("paths", [])
+
+    if config_file.exists():
+        with open(config_file) as f:
+            data = json.load(f)
+            return data.get("dependencies", {}).get("paths", [])
+
+    return []
 
 def set_terraform_bin(path):
     global TERRAFORM_BIN
