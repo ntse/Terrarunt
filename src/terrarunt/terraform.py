@@ -13,6 +13,7 @@ logger = get_logger()
 BOOTSTRAP_STACKS = ["oidc", "state-file"]
 TERRAFORM_BIN = os.getenv("TF_WRAPPER_BIN", "terraform")
 
+
 def read_stack_dependencies(path: str) -> list[str]:
     path = Path(path)
     dep_file = path / "dependencies.json"
@@ -29,6 +30,7 @@ def read_stack_dependencies(path: str) -> list[str]:
             return data.get("dependencies", {}).get("paths", [])
 
     return []
+
 
 def set_terraform_bin(path):
     global TERRAFORM_BIN
@@ -52,12 +54,18 @@ def discover_stack_path(stack_name):
     for path in discover_stack_paths():
         if path.name == stack_name:
             return str(path)
-    raise FileNotFoundError(f"Stack '{stack_name}' not found within 4 levels of current directory")
+    raise FileNotFoundError(
+        f"Stack '{stack_name}' not found within 4 levels of current directory"
+    )
 
 
 def run_terraform_command(command_args, cwd, extra_flags=None):
     try:
-        full_command = [TERRAFORM_BIN] + command_args[1:] if command_args[0] == "terraform" else command_args
+        full_command = (
+            [TERRAFORM_BIN] + command_args[1:]
+            if command_args[0] == "terraform"
+            else command_args
+        )
         if extra_flags:
             full_command += extra_flags
         process = subprocess.Popen(
@@ -72,7 +80,7 @@ def run_terraform_command(command_args, cwd, extra_flags=None):
         process.wait()
         if process.returncode != 0:
             raise subprocess.CalledProcessError(process.returncode, full_command)
-    except subprocess.CalledProcessError as e:
+    except subprocess.CalledProcessError:
         logger.error(f"Command failed: {' '.join(command_args)}")
         raise
 
@@ -96,7 +104,6 @@ def get_tfvars_args(env, stack, stack_path):
             args.append(f"-var-file={str(tfvars_path)}")
 
     return args
-
 
 
 def load_stack_config(stack_path):
@@ -153,8 +160,11 @@ def resolve_stack_dependencies():
     ordered_paths = [name_to_path[name] for name in reversed(result)]
     return ordered_paths, skip_on_destroy
 
+
 def auto_bootstrap_backends(env):
-    logger.info(f"Bootstrapping all known backend stacks: {', '.join(BOOTSTRAP_STACKS)}")
+    logger.info(
+        f"Bootstrapping all known backend stacks: {', '.join(BOOTSTRAP_STACKS)}"
+    )
     for stack in BOOTSTRAP_STACKS:
         try:
             bootstrap_backend(env, stack)
@@ -166,7 +176,9 @@ def plan_stack(env, stack, extra_flags=None):
     stack_path = discover_stack_path(stack)
     tfvars_args = get_tfvars_args(env, stack, stack_path)
     logger.debug(f"Running {stack} plan with args: {tfvars_args}")
-    run_terraform_command([TERRAFORM_BIN, "plan"] + tfvars_args, cwd=stack_path, extra_flags=extra_flags)
+    run_terraform_command(
+        [TERRAFORM_BIN, "plan"] + tfvars_args, cwd=stack_path, extra_flags=extra_flags
+    )
 
 
 def init_stack(env, stack, extra_flags=None):
@@ -185,18 +197,24 @@ def init_stack(env, stack, extra_flags=None):
 
     if backend_type == "s3":
         aws_info = aws()
-        backend_args.extend([
-            f"-backend-config=bucket={aws_info.account_id}-{aws_info.region}-state",
-            f"-backend-config=key={env}/{stack}/terraform.tfstate",
-            f"-backend-config=region={aws_info.region}",
-        ])
+        backend_args.extend(
+            [
+                f"-backend-config=bucket={aws_info.account_id}-{aws_info.region}-state",
+                f"-backend-config=key={env}/{stack}/terraform.tfstate",
+                f"-backend-config=region={aws_info.region}",
+            ]
+        )
         logger.debug(f"Init for {stack} with {backend_args}")
     elif backend_type == "local":
         logger.warning("Using local backend. Not recommended for team use.")
     else:
         raise ValueError(f"Backend type '{backend_type}' is not supported")
 
-    run_terraform_command([TERRAFORM_BIN, "init"] + backend_args + tfvars_args, cwd=stack_path, extra_flags=extra_flags)
+    run_terraform_command(
+        [TERRAFORM_BIN, "init"] + backend_args + tfvars_args,
+        cwd=stack_path,
+        extra_flags=extra_flags,
+    )
 
 
 def bootstrap_backend(env, stack):
@@ -216,11 +234,13 @@ def bootstrap_backend(env, stack):
 
     if backend_type == "s3":
         aws_info = aws()
-        backend_args.extend([
-            f"-backend-config=bucket={aws_info.account_id}-{aws_info.region}-state",
-            f"-backend-config=key={env}/{stack}/terraform.tfstate",
-            f"-backend-config=region={aws_info.region}",
-        ])
+        backend_args.extend(
+            [
+                f"-backend-config=bucket={aws_info.account_id}-{aws_info.region}-state",
+                f"-backend-config=key={env}/{stack}/terraform.tfstate",
+                f"-backend-config=region={aws_info.region}",
+            ]
+        )
     elif backend_type == "local":
         logger.warning("Using local backend. Not recommended for team use.")
     else:
@@ -234,21 +254,30 @@ def bootstrap_backend(env, stack):
     run_terraform_command([TERRAFORM_BIN, "init", "-backend=false"], cwd=stack_path)
 
     logger.info("Applying bootstrap resources (local state)...")
-    run_terraform_command([TERRAFORM_BIN, "apply", "-auto-approve"] + tfvars_args, cwd=stack_path)
+    run_terraform_command(
+        [TERRAFORM_BIN, "apply", "-auto-approve"] + tfvars_args, cwd=stack_path
+    )
 
     if os.path.exists(backend_backup):
         logger.info("Restoring backend.tf...")
         shutil.move(backend_backup, backend_file)
 
     logger.info("Reinitializing Terraform with backend and migrating state...")
-    run_terraform_command([TERRAFORM_BIN, "init", "-migrate-state", "-force-copy"] + backend_args + tfvars_args, cwd=stack_path)
+    run_terraform_command(
+        [TERRAFORM_BIN, "init", "-migrate-state", "-force-copy"]
+        + backend_args
+        + tfvars_args,
+        cwd=stack_path,
+    )
 
 
 def apply_stack(env, stack, extra_flags=None):
     stack_path = discover_stack_path(stack)
     tfvars_args = get_tfvars_args(env, stack, stack_path)
     logger.debug(f"Running {stack} apply with args: {tfvars_args}")
-    run_terraform_command([TERRAFORM_BIN, "apply", "-auto-approve"] + tfvars_args, cwd=stack_path)
+    run_terraform_command(
+        [TERRAFORM_BIN, "apply", "-auto-approve"] + tfvars_args, cwd=stack_path
+    )
 
 
 def destroy_stack(env, stack, extra_flags=None):
@@ -258,4 +287,8 @@ def destroy_stack(env, stack, extra_flags=None):
         logger.info(f"Skipping destroy for {stack} (skip_when_destroying is true)")
         return
     tfvars_args = get_tfvars_args(env, stack, stack_path)
-    run_terraform_command([TERRAFORM_BIN, "destroy", "-auto-approve"] + tfvars_args, cwd=stack_path, extra_flags=extra_flags)
+    run_terraform_command(
+        [TERRAFORM_BIN, "destroy", "-auto-approve"] + tfvars_args,
+        cwd=stack_path,
+        extra_flags=extra_flags,
+    )

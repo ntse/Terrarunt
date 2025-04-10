@@ -4,13 +4,17 @@ from terrarunt.custom_logger import get_logger
 
 logger = get_logger()
 
+
 def is_localstack():
     return os.getenv("TF_WRAPPER_BIN", "").lower() == "tflocal"
+
 
 class aws:
     def __init__(self) -> None:
         if is_localstack():
-            logger.info("Localstack mode detected. Using dummy AWS account ID and default region.")
+            logger.info(
+                "Localstack mode detected. Using dummy AWS account ID and default region."
+            )
             self.account_id = "000000000000"
             self.region = os.environ.get("AWS_REGION", "us-east-1")
         else:
