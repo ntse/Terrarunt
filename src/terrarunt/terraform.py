@@ -5,7 +5,7 @@ import shutil
 import re
 from pathlib import Path
 from collections import defaultdict
-from custom_logger import get_logger
+from terrarunt.custom_logger import get_logger
 from providers import aws
 
 logger = get_logger()
