@@ -209,6 +209,7 @@ def init_stack(env, stack, extra_flags=None):
                     "-backend-config=skip_credentials_validation=true",
                     "-backend-config=skip_metadata_api_check=true",
                     "-backend-config=skip_requesting_account_id=true",
+                    "-backend-config=force_path_style=true",
                 ]
             )
 
