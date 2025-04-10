@@ -1,10 +1,9 @@
 import os
 
 import boto3
-from terrarunt.custom_logger import Logger
+from terrarunt.custom_logger import get_logger
 
-logger = Logger(__name__)
-
+logger = get_logger()
 
 class aws:
     def __init__(self) -> None:
