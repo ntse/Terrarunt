@@ -6,7 +6,7 @@ import re
 from pathlib import Path
 from collections import defaultdict
 from terrarunt.custom_logger import get_logger
-from providers import aws
+from terrarunt.providers import aws
 
 logger = get_logger()
 
