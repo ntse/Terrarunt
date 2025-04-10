@@ -198,7 +198,9 @@ def init_stack(env, stack, extra_flags=None):
 
     if backend_type == "s3":
         aws_info = aws()
+        # Inject LocalStack-compatible backend config for tflocal
         if is_tflocal:
+            logger.debug("Detected tflocal – injecting LocalStack backend overrides.")
             backend_args.extend(
                 [
                     "-backend-config=access_key=fake",
@@ -206,8 +208,11 @@ def init_stack(env, stack, extra_flags=None):
                     "-backend-config=endpoint=http://localhost:4566",
                     "-backend-config=skip_credentials_validation=true",
                     "-backend-config=skip_metadata_api_check=true",
+                    "-backend-config=skip_requesting_account_id=true",
                 ]
             )
+
+        # Common S3 backend config
         backend_args.extend(
             [
                 f"-backend-config=bucket={aws_info.account_id}-{aws_info.region}-state",
@@ -216,8 +221,10 @@ def init_stack(env, stack, extra_flags=None):
             ]
         )
         logger.debug(f"Init for {stack} with {backend_args}")
+
     elif backend_type == "local":
         logger.warning("Using local backend. Not recommended for team use.")
+
     else:
         raise ValueError(f"Backend type '{backend_type}' is not supported")
 
