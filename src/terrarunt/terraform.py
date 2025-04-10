@@ -185,6 +185,7 @@ def init_stack(env, stack, extra_flags=None):
     stack_path = discover_stack_path(stack)
     tfvars_args = get_tfvars_args(env, stack, stack_path)
     backend_file = os.path.join(stack_path, "backend.tf")
+    is_tflocal = TERRAFORM_BIN.endswith("tflocal")
 
     with open(backend_file) as f:
         content = f.read()
@@ -197,6 +198,16 @@ def init_stack(env, stack, extra_flags=None):
 
     if backend_type == "s3":
         aws_info = aws()
+        if is_tflocal:
+            backend_args.extend(
+                [
+                    "-backend-config=access_key=fake",
+                    "-backend-config=secret_key=fake",
+                    "-backend-config=endpoint=http://localhost:4566",
+                    "-backend-config=skip_credentials_validation=true",
+                    "-backend-config=skip_metadata_api_check=true",
+                ]
+            )
         backend_args.extend(
             [
                 f"-backend-config=bucket={aws_info.account_id}-{aws_info.region}-state",
