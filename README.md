@@ -29,3 +29,16 @@ terrarunt --env dev destroy-all
 # Bootstrap backend state - oidc and state-file
 terrarunt --env dev bootstrap
 ```
+
+### TODO
+
+- [ ] Add `--dry-run` support for all commands (log actions, don't execute)
+- [ ] Add `--only` and `--exclude` flags to filter stacks during `*-all` operations
+- [ ] Show a post-run summary table (i.e.. success/failure per stack)
+- [ ] Detect and warn about locked states (e.g. DynamoDB lock still held, native S3 locking)
+- [ ] Validate `backend.tf` files are minimal (only declare the backend type)
+- [ ] Warn when `.terraform/` folders exist but no `.tfstate` is present
+- [ ] Improve formatting of `plan-all` output (grouped by stack name)
+- [ ] Add `plan-diff` command to show changes since last plan (advanced)
+- [ ] Add `terrarunt clean` command to remove `.terraform/` folders and locks
+- [ ] Add `--confirm` prompt for `destroy-all`, with `--force` override
