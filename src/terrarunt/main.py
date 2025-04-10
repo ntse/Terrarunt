@@ -52,6 +52,8 @@ def main():
     )
     subparsers.add_parser("plan-all", help="Plan all stacks in dependency order")
     subparsers.add_parser("init-all", help="Init all stacks in dependency order")
+    subparsers.add_parser("clean", help="Clean .terraform dirs and lockfiles")
+
 
     args = parser.parse_args()
 
