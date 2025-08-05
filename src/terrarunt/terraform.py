@@ -184,7 +184,7 @@ class StackOperations:
     def __init__(self, dry_run: bool = False):
         self.runner = TerraformRunner(dry_run)
     
-    def init_stack(self, env: str, stack_name: str) -> bool:
+    def init_stack(self, env: str, stack_name: str, extra_args: Optional[List[str]] = None) -> bool:
         """Initialize a single stack"""
         from .stacks import stack_manager
         
