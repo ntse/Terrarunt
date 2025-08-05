@@ -9,13 +9,11 @@ with open("requirements.txt", "r", encoding="utf-8") as fh:
 
 setup(
     name="terrarunt",
-    version="2.0.0",
-    author="Your Name",
-    author_email="your.email@example.com", 
+    version="2.0.0", 
     description="A simple Terraform wrapper for managing stacks",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/yourusername/terrarunt",
+    url="https://github.com/ntse/terrarunt",
     package_dir={"": "src"},
     packages=find_packages(where="src"),
     classifiers=[
