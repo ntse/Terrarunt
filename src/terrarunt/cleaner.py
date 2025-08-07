@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 class TerraformCleaner:
     """Handles cleaning of Terraform-generated files"""
     
-    # Files and directories to clean
+    # Files and directories to clean. Not sure about .terraform.lock.hcl
     TERRAFORM_FILES = {
         '.terraform.lock.hcl',
         'terraform.tfstate.backup',
@@ -44,21 +44,18 @@ class TerraformCleaner:
             
             logger.info(f"Cleaning stack: {stack_name}")
             
-            # Files to clean
             files_to_clean = self.TERRAFORM_FILES.copy()
             if include_state:
                 files_to_clean.update(self.STATE_FILES)
             
             success = True
             
-            # Clean files
             for filename in files_to_clean:
                 file_path = stack.path / filename
                 if file_path.exists():
                     if not self._remove_file(file_path):
                         success = False
             
-            # Clean directories
             for dirname in self.TERRAFORM_DIRS:
                 dir_path = stack.path / dirname
                 if dir_path.exists() and dir_path.is_dir():

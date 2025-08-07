@@ -1,23 +1,292 @@
 [build-system]
-requires = ["setuptools", "setuptools-scm"]
+requires = ["setuptools>=64", "setuptools-scm>=8"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "terrarunt"
-description = "A very light Terrafrom wrapper for deploying Terraform stacks"
+version = "2.0.0"
+description = "A simple Terraform wrapper for managing stacks"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.12"
 license = {text = "MIT"}
+authors = [
+    {name = "ntse", email = "nobody@nowhere.com"},
+]
 classifiers = [
-    "Framework :: Django",
-    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
 ]
 dependencies = [
-    "requests",
+    "boto3",
     "jsonschema",
-    "boto3"
+    "requests",
 ]
-dynamic = ["version"]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-mock>=3.10.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
+    "pre-commit>=3.0.0",
+    "tox>=4.0.0",
+]
+test = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-mock>=3.10.0",
+    "pytest-xdist>=3.0.0",
+    "pytest-timeout>=2.1.0",
+]
+docs = [
+    "sphinx>=5.0.0",
+    "sphinx-rtd-theme>=1.2.0",
+    "myst-parser>=1.0.0",
+]
+localstack = [
+    "localstack>=2.0.0",
+    "terraform-local>=0.15.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/ntse/terrarunt"
+Documentation = "https://github.com/ntse/terrarunt#readme"
+Repository = "https://github.com/ntse/terrarunt.git"
+"Bug Tracker" = "https://github.com/ntse/terrarunt/issues"
+Changelog = "https://github.com/ntse/terrarunt/blob/main/CHANGELOG.md"
 
 [project.scripts]
 terrarunt = "terrarunt.main:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+# Pytest configuration
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--verbose",
+    "--tb=short",
+    "--strict-markers",
+    "--strict-config",
+    "--cov=src/terrarunt",
+    "--cov-report=term-missing",
+    "--cov-report=html:htmlcov",
+    "--cov-report=xml",
+    "--cov-fail-under=80",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+    "aws: marks tests that require AWS credentials",
+    "terraform: marks tests that require Terraform binary",
+]
+filterwarnings = [
+    "error",
+    "ignore::UserWarning",
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+]
+#timeout = 300  # 5 minutes default timeout for tests
+#timeout_method = "thread"
+
+[tool.coverage.run]
+source = ["src"]
+branch = true
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "src/terrarunt/_version.py",
+    "src/terrarunt/__version__.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "def __str__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+show_missing = true
+skip_covered = false
+precision = 2
+
+[tool.coverage.html]
+directory = "htmlcov"
+
+# Black code formatting
+[tool.black]
+line-length = 100
+target-version = ['py38', 'py39', 'py310', 'py311', 'py312']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+    \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | migrations
+)/
+'''
+
+# isort import sorting
+[tool.isort]
+profile = "black"
+line_length = 100
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+src_paths = ["src", "tests"]
+known_first_party = ["terrarunt"]
+sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+
+# Flake8 linting
+[tool.flake8]
+max-line-length = 100
+extend-ignore = [
+    "E203",  # whitespace before ':'
+    "E501",  # line too long (handled by black)
+    "W503",  # line break before binary operator
+    "W504",  # line break after binary operator
+]
+exclude = [
+    ".git",
+    "__pycache__",
+    "build",
+    "dist",
+    ".eggs",
+    "*.egg-info",
+    ".venv",
+    ".tox",
+    "migrations",
+]
+per-file-ignores = [
+    "__init__.py:F401",  # unused imports in __init__.py
+    "tests/*:S101",      # assert statements in tests
+]
+
+# MyPy type checking
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+show_error_codes = true
+show_column_numbers = true
+
+[[tool.mypy.overrides]]
+module = [
+    "boto3.*",
+    "botocore.*",
+    "jsonschema.*",
+]
+ignore_missing_imports = true
+
+# Tox testing configuration
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+envlist = py38,py39,py310,py311,py312,lint,type,security
+isolated_build = true
+
+[testenv]
+deps = 
+    pytest>=7.0.0
+    pytest-cov>=4.0.0
+    pytest-mock>=3.10.0
+    pytest-xdist>=3.0.0
+commands = 
+    pytest {posargs}
+
+[testenv:lint]
+deps = 
+    black>=23.0.0
+    isort>=5.12.0
+    flake8>=6.0.0
+commands = 
+    black --check --diff src tests
+    isort --check-only --diff src tests
+    flake8 src tests
+
+[testenv:format]
+deps = 
+    black>=23.0.0
+    isort>=5.12.0
+commands = 
+    black src tests
+    isort src tests
+
+[testenv:type]
+deps = 
+    mypy>=1.0.0
+    types-requests
+commands = 
+    mypy src
+
+[testenv:security]
+deps = 
+    bandit>=1.7.0
+    safety>=2.0.0
+commands = 
+    bandit -r src
+    safety check
+
+[testenv:docs]
+deps = 
+    sphinx>=5.0.0
+    sphinx-rtd-theme>=1.2.0
+    myst-parser>=1.0.0
+commands = 
+    sphinx-build -W -b html docs docs/_build/html
+
+[testenv:integration]
+deps = 
+    pytest>=7.0.0
+    pytest-cov>=4.0.0
+    pytest-mock>=3.10.0
+    boto3>=1.26.0
+setenv = 
+    AWS_PROFILE = test
+commands = 
+    pytest tests/integration {posargs}
+"""
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+version = "2.0.0"
+tag_format = "v$version"
+version_files = [
+    "src/terrarunt/__init__.py:__version__",
+    "pyproject.toml:version"
+]

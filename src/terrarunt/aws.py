@@ -221,5 +221,4 @@ class AWSProvider:
             return False
 
 
-# Global AWS provider instance
 aws_provider = AWSProvider()

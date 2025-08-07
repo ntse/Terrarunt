@@ -54,6 +54,7 @@ class StackManager:
     
     def __init__(self, root_path: Optional[Path] = None):
         self.root_path = root_path or Path.cwd()
+        # TODO: Is the extra complexity added by having a cache worth the slight I/O improvement?
         self._stacks_cache: Optional[Dict[str, Stack]] = None
     
     def discover_stacks(self) -> Dict[str, Stack]:
@@ -64,9 +65,7 @@ class StackManager:
         logger.info(f"Discovering stacks in {self.root_path}")
         stacks = {}
         
-        # Find all directories with stack configuration files
         for path in self.root_path.rglob("*/"):
-            # Limit search depth
             relative_path = path.relative_to(self.root_path)
             if len(relative_path.parts) > config.max_discovery_depth:
                 continue
@@ -81,7 +80,7 @@ class StackManager:
             
             if has_terraform:
                 try:
-                    stack = Stack.from_path(relative_path)
+                    stack = Stack.from_path(path)
                     stacks[stack.name] = stack
                     logger.debug(f"Found stack: {stack.name} at {stack.path}")
                 except Exception as e:
